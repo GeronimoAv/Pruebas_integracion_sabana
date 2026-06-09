@@ -1,5 +1,7 @@
 # Taller de Pruebas de Integración y Sistema
 
+INTEGRANTES: Sadane Geronimo Miguel Santiago Acevedo Virgues
+
 ## estructura del proyecto
 
 ``` cli

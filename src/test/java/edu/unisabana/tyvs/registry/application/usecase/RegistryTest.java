@@ -87,4 +87,53 @@ public class RegistryTest {
         // Assert segundo registro
         assertEquals(RegisterResult.DUPLICATED, result2);
     }
+
+    /**
+     * Caso de prueba: persona menor de edad debe ser rechazada.
+     */
+    @Test
+    public void shouldRejectUnderagePerson() throws Exception {
+        // Arrange
+        
+        Person p = new Person("YOUNG", 101, 16, Gender.MALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(p);
+
+        // Assert
+        assertEquals(RegisterResult.UNDERAGE, result);
+        assertFalse(repo.existsById(101));
+    }
+
+    /**
+     * Caso de prueba: persona fallecida debe ser rechazada.
+     */
+    @Test
+    public void shouldRejectDeadPerson() throws Exception {
+        // Arrange
+        Person p = new Person("DEAD", 102, 40, Gender.MALE, false);
+
+        // Act
+        RegisterResult result = registry.registerVoter(p);
+
+        // Assert
+        assertEquals(RegisterResult.DEAD, result);
+        assertFalse(repo.existsById(102));
+    }
+
+    /**
+     * Caso de prueba: ID inválido debe devolver INVALID.
+     */
+    @Test
+    public void shouldRejectInvalidId() throws Exception {
+        // Arrange
+        Person p = new Person("INVALID_ID", 0, 30, Gender.FEMALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(p);
+
+        // Assert
+        assertEquals(RegisterResult.INVALID, result);
+        assertFalse(repo.existsById(0));
+    }
 }
