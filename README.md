@@ -1,5 +1,7 @@
 # Taller de Pruebas de Integración y Sistema
 
+toda la documentacion se encuentra en la Wiki del repositorio
+
 INTEGRANTES: Sadane Geronimo Miguel Santiago Acevedo Virgues
 
 ## estructura del proyecto
@@ -50,4 +52,18 @@ INTEGRANTES: Sadane Geronimo Miguel Santiago Acevedo Virgues
                             └── delivery
                                 └── rest
                                     └── RegistryControllerIT.java
+```
+
+## pasos de ejecucion
+
+- pruebas unitarias
+
+``` cli
+mvn test
+```
+
+- se usa el siguiente comando para poder ejecutar tanto las pruebas unitarias, del sistema y el reporte de jacoco
+
+``` cli
+mvn -Djacoco.skip=false clean verify
 ```
