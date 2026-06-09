@@ -1,0 +1,51 @@
+name: CI
+
+# Workflow de integración continua:
+# - Compila el proyecto, ejecuta pruebas unitarias e de integración
+# - Genera informe de cobertura JaCoCo
+# - Sube los reportes (JaCoCo HTML y reportes de test) como artifacts
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Obtiene el código del repositorio para el runner
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Configura Java (Temurin 17) y activa el cache de dependencias de Maven
+      - name: Set up Java 17 and cache Maven
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # Ejecuta la compilación y todas las pruebas; JaCoCo está activado con
+      # -Djacoco.skip=false para forzar la generación del agente de cobertura.
+      - name: Build, run tests and generate JaCoCo report
+        run: mvn -Djacoco.skip=false -B -V clean verify
+
+      # Sube como artifact el directorio HTML generado por JaCoCo.
+      # Descárgalo desde Actions -> job -> Artifacts -> jacoco-report
+      - name: Upload JaCoCo HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco
+
+      # Sube los XML/textos de los reportes de los plugins surefire/failsafe
+      # para facilitar depuración en CI (fallos, logs, stacktraces).
+      - name: Upload surefire/failsafe reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            target/surefire-reports
+            target/failsafe-reports

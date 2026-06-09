@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import java.sql.SQLException;
 
 /**
  * Clase de prueba unitaria para {@link Registry} utilizando un mock de {@link RegistryRepositoryPort}.
@@ -70,6 +71,45 @@ public class RegistryWithMockTest {
 
         // Assert: verificar resultado y comportamiento esperado del mock
         assertEquals(RegisterResult.DUPLICATED, result);
+        verify(repo, never()).save(anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+
+    
+    // Prueba vivo: el repositorio indica que el ID NO existe, se debe invocar `save(...)`
+    @Test
+    public void shouldSaveWhenRepoSaysNotExists() throws Exception {
+        // Arrange
+        when(repo.existsById(10)).thenReturn(false);
+        Person p = new Person("Carlos", 10, 30, Gender.MALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(p);
+
+        // Assert: result is VALID and save was invoked with the exact values
+        assertEquals(RegisterResult.VALID, result);
+        verify(repo).save(10, "Carlos", 30, true);
+    }
+
+    // Prueba de error: simula una SQLException en el repositorio y verifica
+    // que el caso de uso la envuelva en IllegalStateException y NO invoque `save(...)`.
+    @Test
+    public void shouldWrapSQLExceptionFromRepo() throws Exception {
+        // Arrange: simulate SQL exception when checking existence
+        when(repo.existsById(5)).thenThrow(new SQLException("DB down"));
+        Person p = new Person("Luis", 5, 40, Gender.MALE, true);
+
+        // Act / Assert: registry should wrap the exception into IllegalStateException
+        try {
+            registry.registerVoter(p);
+            fail("Expected IllegalStateException due to repository failure");
+        } catch (IllegalStateException e) {
+            String msg = e.getMessage();
+            assertTrue(msg.contains("Persistencia"));
+            assertTrue(msg.contains("SQLException"));
+        }
+
+        // And ensure save was never called
         verify(repo, never()).save(anyInt(), anyString(), anyInt(), anyBoolean());
     }
 }
